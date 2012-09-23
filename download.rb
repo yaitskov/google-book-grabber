@@ -15,9 +15,6 @@ require 'prawn'
 # example is http://books.google.ru/books?id=MFjNhTjeQKkC&lpg=PP1&dq=isbn%3A0981531644&pg=PR13&jscmd=click3
 # It can be got from Firebug on browsing the book you to get
 
-# response
-# {"page":[{"pid":"PR13","src":"http://books.google.ru/books?id=MFjNhTjeQKkC\u0026pg=PR13\u0026img=1\u0026zoom=3\u0026hl=en\u0026sig=ACfU3U1wT-2JDzF5Eha2fsUe-A_m9KNZ5A","flags":0,"order":13,"uf":"http://books.google.ru/books_feedback?id=MFjNhTjeQKkC\u0026spid=AFLRE7244Si5wmg-jUTYz6joMap5gx8ozhwfIshYAhUJW3EkwDLNNRI\u0026ftype=0"},{"pid":"PR12","src":"http://books.google.ru/books?id=MFjNhTjeQKkC\u0026pg=PR12\u0026img=1\u0026zoom=3\u0026hl=en\u0026sig=ACfU3U1eNqXCGjVeEZUzVSwLKxMfSusO3Q"},{"pid":"PR14","src":"http://books.google.ru/books?id=MFjNhTjeQKkC\u0026pg=PR14\u0026img=1\u0026zoom=3\u0026hl=en\u0026sig=ACfU3U34XA644yrE3PZL09M2nMbV_CcM6Q"},{"pid":"PR15","src":"http://books.google.ru/books?id=MFjNhTjeQKkC\u0026pg=PR15\u0026img=1\u0026zoom=3\u0026hl=en\u0026sig=ACfU3U3JdIi8qZptNAPLi17qsqUutrnf2g"},{"pid":"PR16","src":"http://books.google.ru/books?id=MFjNhTjeQKkC\u0026pg=PR16\u0026img=1\u0026zoom=3\u0026hl=en\u0026sig=ACfU3U3QyRD3UGxo5NTYN2x-JHW6fHf46Q"},{"pid":"PP1"},{"pid":"PR4"},{"pid":"PR9"},{"pid":"PR10"},{"pid":"PR11"},{"pid":"PR12"},{"pid":"PR13"},{"pid":"PR14"},{"pid":"PR15"},{"pid":"PR16"},{"pid":"PR17"},{"pid":"PR18"},{"pid":"PR19"},{"pid":"PR20"},{"pid":"PR21"},{"pid":"PR22"},{"pid":"PR23"},{"pid":"PR24"},{"pid":"PR25"},{"pid":"PR26"},{"pid":"PR27"},{"pid":"PR28"},{"pid":"PR29"},{"pid":"PR30"},{"pid":"PR31"},{"pid":"PR32"},{"pid":"PR33"},{"pid":"PR34"},{"pid":"PR35"},{"pid":"PR36"},{"pid":"PR37"},{"pid":"PR38"},{"pid":"PR39"},{"pid":"PR40"},{"pid":"PA1"},{"pid":"PA2"},{"pid":"PA3"},{"pid":"PA4"},{"pid":"PA5"},{"pid":"PA6"},{"pid":"PA7"},{"pid":"PA8"},{"pid":"PA9"},{"pid":"PA1
-
 $bootUrl = nil
 $quality = 1000
 $skipDownloading = false
@@ -114,7 +111,8 @@ class GoogleDownloader
     puts "downloading page images..."
     pagei = 1
     @pages.each do |page|
-      fileName = 'pages/' + page + '.png'    
+      fileName = @bookName + '/' + page + '.png'
+      puts "path #{fileName}"
       pagei += 1
       if File.exist?(fileName)
         puts "page #{page} is already exist"
@@ -161,16 +159,16 @@ class GoogleDownloader
     doc = Prawn::Document.new(:page_size => 'A4')
     @pages.each do |page| 
       fileName = "#{@bookName}/#{page}.png"
-      if !Dir.exist?(fileName)
+      if !File.exist?(fileName)
         puts "page #{page} is not exist"
         next
       end  
-      doc.image fileName, :position => :center, :vposition => :center
-      doc.start_new_page  
+      doc.image fileName, :position => :center, :vposition => :center, :fit => [ 800, 900 ]
+      #doc.start_new_page  
     end
 
     puts "rendering"
-    doc.render_file "#{bookName}.pdf"    
+    doc.render_file "#{@bookName}.pdf"    
   end
 end
 
@@ -184,6 +182,7 @@ if !$skipDownloading
     downloader.moveSkippedPages
   end
 end
+
 downloader.renderBook
 puts "#{$bookName}.pdf file is complete"
 

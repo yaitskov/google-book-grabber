@@ -3,18 +3,25 @@
 
 require 'prawn'
 
-
 doc = Prawn::Document.new(:page_size => 'A4')
-doc.font "Times-Roman", :size => 12
-doc.text "hello world"
-doc.start_new_page
 
-doc.text "hello world"
-doc.start_new_page
+sorted = Dir['./pages/*.png'].sort { |a,b|
+  ma = a.match('(PR|PP|PA)([0-9]+)')
+  mb = b.match('(PR|PP|PA)([0-9]+)')
+  if ma[1] == mb[1]
+  else
+    if ma[1] == 'PP'
+      return -1
+    else
+      if mb[1] == 'PP'
+        return 1
+      else
+      end
+  end
+}
 
-doc.text "hello world"
-doc.start_new_page
-doc.image 'PP1.png', :position => :center, :vposition => :center
-
-
+sorted.each do |file|
+doc.image file, :position => :center, :vposition => :center  
+doc.start_new_page  
+end
 doc.render_file "test.pdf"

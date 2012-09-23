@@ -63,6 +63,7 @@ class GoogleDownloader
   end
   def initialize(bootUrl, quality, bookName)
     @quality = quality
+    @skippedPages = []
     @header = self.buildHeader
     @bookName = bookName
     parsedBootUrl = URI.parse(bootUrl)
@@ -100,11 +101,12 @@ class GoogleDownloader
     puts "looking for page #{page}..."
     @params['pg'] = page
     content = self.getContent(@path, @params)
-    #puts "content #{content}"
+    # puts "content #{content}"
     content = JSON.parse(content)
     knownPages = content['page'].find_all { |page| page.has_key?('src') }
     knownPages.each do |page|
       @pageMap[page['pid']] = page['src'] + '&w=' + $quality.to_s
+      #puts "page #{page['pid']} = #{page['src']}"
     end        
   end
   # download page PNG images to @bookName folder
@@ -126,12 +128,26 @@ class GoogleDownloader
   end
   def downloadOnePage(page, fileName)
     puts "downloading page #{page} => #{@pageMap[page]}"
-    pageImage = self.getContent(@pageMap[page])
-    pageFile = File.open(fileName, 'w')
-    pageFile.write(pageImage)
-    pageFile.close    
+    if @pageMap.has_key?(page)
+      pageImage = self.getContent(@pageMap[page])
+      pageFile = File.open(fileName, 'w')
+      pageFile.write(pageImage)
+      pageFile.close
+    else
+      puts "skipping #{page} cause its url is empty"
+      @skippedPages << page
+    end
+  end
+  def moveSkippedPages    
+    @pages = @skippedPages
+    puts "retry get pages #{@pages}"
+    @skippedPages = []
+  end
+  def isSkippedPagesEmpty?
+    return @skippedPages.empty?
   end
   def getContent(url, params = '')
+    # puts "trying #{url} #{params}"    
     begin      
       return @client.get_content(url, params, @header)
     rescue HTTPClient::BadResponseError, HTTPClient::ReceiveTimeoutError => err 
@@ -160,7 +176,13 @@ end
 
 downloader = GoogleDownloader.new $bootUrl, $quality, $bookName
 if !$skipDownloading
-  downloader.downloadPages
+  while true 
+    downloader.downloadPages
+    if downloader.isSkippedPagesEmpty?
+      break
+    end
+    downloader.moveSkippedPages
+  end
 end
 downloader.renderBook
 puts "#{$bookName}.pdf file is complete"

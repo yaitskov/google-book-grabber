@@ -1,7 +1,15 @@
-#!/usr/bin/ruby
+#!/usr/bin/jruby
+# encoding: utf-8
 # -*- coding: utf-8 -*-
 
 require 'prawn'
+module Prawn
+  module Core
+      def self.utf8_to_utf16(str)
+        str
+      end
+  end
+end
 #File.delete 'test.pdf'
 doc = Prawn::Document.new(:page_size => 'A4')
 

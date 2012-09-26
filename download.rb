@@ -1,4 +1,5 @@
-#!/usr/bin/ruby
+#!/usr/bin/jruby
+# encoding: utf-8
 require 'uri'
 require 'cgi'
 require 'httpclient'
